@@ -113,7 +113,7 @@ public class DrawerManager {
     ) {
         guard let parentController = parentController else { return }
 
-        closeActiveDrawer(animated: false, disposeDrawer: openState == .regular ? true : false)
+        closeActiveDrawer(animated: false, disposeDrawer: true)
         activeDrawer = viewController
         refreshSize(portraitSize: configuration.portraitSize, landscapeSize: configuration.landscapeSize)
         drawerState = .opened
@@ -121,9 +121,10 @@ public class DrawerManager {
             viewController: viewController,
             configuration: BottomSheetConfiguration(
                 cornerRadius: configuration.cornerRadius,
-                gestureInterceptView: configuration.gestureInterceptView
+                gestureInterceptView: configuration.gestureInterceptView,
+                dismissible: configuration.dismissible
             ),
-            canBeDismissed: { true },
+            canBeDismissed: { configuration.dismissible ?? true },
             dismissCompletion: {
                 if self.openState == .regular {
                     self.closeActiveDrawer(animated: true, disposeDrawer: true)
