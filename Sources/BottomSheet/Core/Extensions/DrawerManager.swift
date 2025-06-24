@@ -10,7 +10,7 @@ import UIKit
 
 /// An enum indicates wheather opening a new Drawer is for orientation changes or user action.
 private enum OpenState {
-    case orienationChanges
+    case orientationChanges
     case regular
 }
 
@@ -45,7 +45,7 @@ public class DrawerManager {
     /// - Note: This should be triggered when the device orientation changes.
     public func orientationDidChange() {
         guard let activeDrawer = activeDrawer else { return }
-        openState = .orienationChanges
+        openState = .orientationChanges
         drawerState = .closed
         openDrawer(viewController: activeDrawer, configuration: currentConfiguration, dismissCompletion: dismissCompletion)
     }
@@ -112,28 +112,34 @@ public class DrawerManager {
         dismissCompletion: (() -> Void)?
     ) {
         guard let parentController = parentController else { return }
-
-        closeActiveDrawer(animated: false, disposeDrawer: true)
+        
+        // Landscape Handling
+        if openState != .regular {
+            closeActiveDrawer(animated: false, disposeDrawer: false)
+        }
+        
         activeDrawer = viewController
         refreshSize(portraitSize: configuration.portraitSize, landscapeSize: configuration.landscapeSize)
         drawerState = .opened
         parentController.presentBottomSheet(
-            viewController: viewController,
-            configuration: BottomSheetConfiguration(
-                cornerRadius: configuration.cornerRadius,
-                gestureInterceptView: configuration.gestureInterceptView,
-                dismissible: configuration.dismissible
-            ),
+            viewController: viewController, //MINLY CAM
+            configuration: configuration,
             canBeDismissed: { configuration.dismissible ?? true },
-            dismissCompletion: {
+            dismissCompletion: { [weak self] in
+                // print("Drawer Dismissed Successfully - Controller: \(String(describing: viewController))")
+                guard let self = self else { return }
                 if self.openState == .regular {
-                    self.closeActiveDrawer(animated: true, disposeDrawer: true)
+                    self.drawerState = .closed
+                    self.activeDrawer = nil
+                    self.dismissCompletion?()
                 } else {
+                    // Landscape Handling
                     self.closeActiveDrawer(animated: false, disposeDrawer: false)
                     self.openState = .regular
                 }
             }
         )
+        // print("Presented Drawer, Controller: \(String(describing: viewController)), ParentController: \(String(describing: parentController))")
     }
 
     /// Updates the active drawer with a new size based on the current orientation.
@@ -147,26 +153,22 @@ public class DrawerManager {
     ) {
         guard let activeDrawer = activeDrawer else { return }
 
-        if let newPortraitSize = portraitSize {
-            currentConfiguration.portraitSize = newPortraitSize
-            activeDrawer.preferredContentSize.height = currentConfiguration.portraitSize ?? UIScreen.main.bounds.height / 2
-        }
-
-        if let newLandscapeSize = landscapeSize {
-            currentConfiguration.landscapeSize = newLandscapeSize
-            activeDrawer.preferredContentSize.width = currentConfiguration.landscapeSize ?? UIScreen.main.bounds.width / 2
-        }
+        let height = portraitSize ?? currentConfiguration.portraitSize ?? UIScreen.main.bounds.height / 2
+        let width = landscapeSize ?? currentConfiguration.landscapeSize ?? UIScreen.main.bounds.width
+        activeDrawer.preferredContentSize = CGSize(width: width, height: height)
     }
 
     /// Closes the currently active drawer, if any.
-    public func closeActiveDrawer(animated: Bool, disposeDrawer: Bool = true) {
+    public func closeActiveDrawer(animated: Bool, disposeDrawer: Bool = true, completion: (() -> Void)? = nil) {
         guard let activeDrawer = activeDrawer else { return }
+        // print("Attempting to Dismiss Drawer - Controller: \(String(describing: self.activeDrawer))")
         activeDrawer.dismiss(animated: animated) {
             if disposeDrawer {
                 self.drawerState = .closed
                 self.activeDrawer = nil
                 self.dismissCompletion?()
             }
+            completion?()
         }
     }
 }
