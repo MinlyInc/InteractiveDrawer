@@ -296,7 +296,7 @@ public final class BottomSheetPresentationController: UIPresentationController {
         } else {
             width = min(preferredWidth, UIScreen.main.bounds.width)
             height = containerHeight
-            xPosition = UIScreen.main.bounds.width - width
+            xPosition = configuration.isRTL ?  0 : UIScreen.main.bounds.width - width
             yPosition = 0
         }
 

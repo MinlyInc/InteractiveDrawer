@@ -21,6 +21,7 @@ public struct BottomSheetConfiguration {
     public var landscapeSize: CGFloat?
     public var size: DrawerSize?
     public var dismissible: Bool?
+    public var isRTL: Bool
 
     public init(
         cornerRadius: CGFloat = 10,
@@ -28,8 +29,8 @@ public struct BottomSheetConfiguration {
         portraitSize: CGFloat? = nil,
         landscapeSize: CGFloat? = nil,
         size: DrawerSize? = nil,
-        dismissible: Bool? = true
-
+        dismissible: Bool? = true,
+        isRTL: Bool = false
     ) {
         self.cornerRadius = cornerRadius
         self.gestureInterceptView = gestureInterceptView
@@ -37,6 +38,7 @@ public struct BottomSheetConfiguration {
         self.landscapeSize = landscapeSize
         self.size = size
         self.dismissible = dismissible
+        self.isRTL = isRTL
     }
 
     public static let `default` = BottomSheetConfiguration(
