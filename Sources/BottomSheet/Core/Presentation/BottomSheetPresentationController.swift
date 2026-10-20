@@ -154,6 +154,8 @@ public final class BottomSheetPresentationController: UIPresentationController {
     public override func containerViewDidLayoutSubviews() {
         super.containerViewDidLayoutSubviews()
 
+        // A layout pass while dismissing would animate the sheet back over the dismissal animation.
+        guard state != .dismissing else { return }
         updatePresentedViewSize(animated: true)
     }
 
@@ -296,7 +298,7 @@ public final class BottomSheetPresentationController: UIPresentationController {
         } else {
             width = min(preferredWidth, UIScreen.main.bounds.width)
             height = containerHeight
-            xPosition = configuration.isRTL ?  0 : UIScreen.main.bounds.width - width
+            xPosition = configuration.isRTL ? 0 : UIScreen.main.bounds.width - width
             yPosition = 0
         }
 
@@ -531,6 +533,12 @@ extension BottomSheetPresentationController: UIViewControllerAnimatedTransitioni
 
         if isPresenting {
             presentedView.frame = offscreenFrame
+        } else {
+            // The container is shrunk to the sheet's frame so touches outside it reach the
+            // presenting view. On iOS 26 it can be back at full screen when a dismissal starts, which left
+            // the sheet at the top of the screen before it slid out. Pin both frames again first.
+            containerView.frame = finalFrame
+            presentedView.frame = containerView.bounds
         }
 
         applyStyle()
