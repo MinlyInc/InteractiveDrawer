@@ -112,17 +112,17 @@ public class DrawerManager {
         dismissCompletion: (() -> Void)?
     ) {
         guard let parentController = parentController else { return }
-        
+
         // Landscape Handling
         if openState != .regular {
             closeActiveDrawer(animated: false, disposeDrawer: false)
         }
-        
+
         activeDrawer = viewController
         refreshSize(portraitSize: configuration.portraitSize, landscapeSize: configuration.landscapeSize)
         drawerState = .opened
         parentController.presentBottomSheet(
-            viewController: viewController, //MINLY CAM
+            viewController: viewController, // MINLY CAM
             configuration: configuration,
             canBeDismissed: { configuration.dismissible ?? true },
             dismissCompletion: { [weak self] in
